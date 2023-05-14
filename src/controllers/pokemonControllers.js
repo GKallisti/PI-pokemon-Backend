@@ -18,7 +18,7 @@ const pokeApi = async (name) => {
           height: pokeByName.data.height,
           weight: pokeByName.data.weight,
           image:
-            pokeByName.data.sprites.versions["generation-v"]["black-white"]
+            pokeByName.data.sprites.versions["generation-iii"]["emerald"]
               .front_default,
           types: pokeByName.data.types.map((e) => {
             return { name: e.type.name };
@@ -29,12 +29,11 @@ const pokeApi = async (name) => {
       }
     } else {
       const pokemonsApi = await axios.get(
-        "https://pokeapi.co/api/v2/pokemon?limit=45"
+        "https://pokeapi.co/api/v2/pokemon?limit=151"
       );
       const subRequest = pokemonsApi.data.results.map((e) => axios.get(e.url));
       let promiseRequest = await Promise.all(subRequest);
      
-    //   console.log(promiseRequest);
 
       promiseRequest = await promiseRequest.map((e) => {
         return {
@@ -47,7 +46,7 @@ const pokeApi = async (name) => {
           height: e.data.height,
           weight: e.data.weight,
           image:
-            e.data.sprites.versions["generation-v"]["black-white"]
+            e.data.sprites.versions["generation-iii"]["emerald"]
               .front_default,
           createInDb: "false",
           types: e.data.types.map((e) => {
@@ -83,8 +82,8 @@ const pokeDb = async (name) => {
     
     }
   } catch {
-    // res.status(500).json("Pokemon not found");//c esto no encuentra los pokemons
-    console.log("Pokemon not found in db");
+  res.status(500).json("That Pokemon is not in Bills PC");//c esto no encuentra los pokemons
+    
   }
 };
 
@@ -92,7 +91,7 @@ const getPokemons = async (req, res) => {
   try{
       const { name } = req.query;
       const pokemonsApi = await pokeApi(name);
-      console.log("sebas", pokemonsApi);
+      console.log( pokemonsApi);
       const pokemonsDb = await pokeDb(name);
       let pokemonDbAndApi = [];
       if(!pokemonsApi && name){
@@ -194,8 +193,43 @@ const createPokemon = async (req, res) => {
   }
 };
 
+
+
+const deletePokemon = async (id)=> {
+try {
+  let toBedeleted =  await Pokemon.findOne({
+    where: {id: id}
+    
+  })
+
+  if(!toBedeleted) {
+    throw new Error ('We couldnt find that Pokemon on Bills PC')
+  }
+  await toBedeleted.destroy()
+  return `${toBedeleted.name} is released, Bye Bye ${toBedeleted.name}!`
+} catch (error) {
+  throw new Error(error.message)
+}
+  
+}
+
+const deletePokemonfromdb = async (req, res)=>{
+  const {id} = req.params
+  try {
+    const toDelete = await deletePokemon(id)
+    return res.status(200).send(toDelete)
+    .json(toDelete)
+  } catch (error) {
+    return res.status(400).json({error: error.message})
+    
+  }
+}
+
+
+
 module.exports = {
   getPokemons,
   createPokemon,
   getPokemonById,
+  deletePokemonfromdb
 };
