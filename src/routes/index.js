@@ -12,6 +12,6 @@ router.get('/pokemons', getPokemons);//query {name} ?name=pikachu
 router.get('/pokemons:id', getPokemonById);//params
 router.post(`/pokemons`, createPokemon);//query {name}
 router.use('/types', getTypes);
-router.delete('/pokemons', deletePokemonfromdb);
+router.delete('/delete', deletePokemonfromdb);
 
 module.exports = router;
