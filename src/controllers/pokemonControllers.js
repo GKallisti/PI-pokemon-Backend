@@ -193,12 +193,10 @@ const createPokemon = async (req, res) => {
 
 const deletePokemon = async (id)=> {
 try {
-  let toBedeleted =  await getPokemonById(id);
-  
-  if(!pokemonIdDb) {
-    throw new Error ('We couldnt find that Pokemon on Bills PC')
-  }
-  await toBedeleted.destroy()
+   await Pokemon.destroy({
+    where: {id},
+  });
+
   return `This Pokemon has been released, Bye Bye!`
 } catch (error) {
   throw new Error(error.message)
@@ -213,7 +211,6 @@ const deletePokemonfromdb = async (req, res)=>{
     return res.status(200).json(toDelete)
   } catch (error) {
     return res.status(400).json({error: error.message})
-    
   }
 }
 
