@@ -1,6 +1,10 @@
 const axios = require("axios");
 const { Pokemon, Type } = require("../db");
 
+
+//funciones auxiliares.
+
+
 const pokeApi = async (name) => {
   try {
     if (name) {
@@ -54,10 +58,10 @@ const pokeApi = async (name) => {
           }),
         };
       });
-      return promiseRequest;//retorna el array de pokemons de la api
+      return promiseRequest; 
     }
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({error: error.message})
   }
 };
 
@@ -73,6 +77,7 @@ const pokeDb = async (name) => {
       },
     });
     if (name) {
+
       const pokdb= pokemon.filter((e) =>
         e.name.toLowerCase().includes(name.toLowerCase())
       );
@@ -82,16 +87,32 @@ const pokeDb = async (name) => {
     
     }
   } catch {
-  res.status(500).json("That Pokemon is not in Bills PC");//c esto no encuentra los pokemons
+    return res.status(500).json({error: error.message})
     
   }
 };
+
+
+const deletePokemon = async (id)=> {
+  try {
+     await Pokemon.destroy({
+      where: {id},
+    });
+  
+    return `This Pokemon has been released, Bye Bye!`
+  } catch (error) {
+    return res.status(500).json({error: error.message})
+  }
+    
+  }
+
+
+//funciones controladoras
 
 const getPokemons = async (req, res) => {
   try{
       const { name } = req.query;
       const pokemonsApi = await pokeApi(name);
-      console.log( pokemonsApi);
       const pokemonsDb = await pokeDb(name);
       let pokemonDbAndApi = [];
       if(!pokemonsApi && name){
@@ -100,6 +121,7 @@ const getPokemons = async (req, res) => {
           pokemonDbAndApi = pokemonsApi;
       }else{
           if (Array.isArray(pokemonsDb) && pokemonsDb.length > 0) {
+            
               pokemonDbAndApi = pokemonsDb.concat(pokemonsApi);
           } else {
               pokemonDbAndApi = pokemonsApi;
@@ -107,16 +129,19 @@ const getPokemons = async (req, res) => {
       };
       res.send(pokemonDbAndApi);
   }catch(error){
-      console.log(error);
+    return res.status(500).json({error: error.message})
   };
 };
 
 const getPokemonById = async (req, res) => {
   try {
     const { id } = req.params;
+    
     if (id.length < 5) {
+      //si el id es menor a 5 cifras es por que es de la api
       let pokemonApi = await axios.get(
         `https://pokeapi.co/api/v2/pokemon/${id}`
+       
       );
       let pokemonByIdApi = [
         {
@@ -131,7 +156,7 @@ const getPokemonById = async (req, res) => {
           image:
             pokemonApi.data.sprites.versions["generation-iii"]["emerald"]
               .front_default,
-          createInDb: "false",
+          createInDb: "false", 
           types: pokemonApi.data.types.map((e) => {
             return { name: e.type.name };
           }),
@@ -139,6 +164,7 @@ const getPokemonById = async (req, res) => {
       ];
       res.send(pokemonByIdApi);
     } else {
+     
       let pokemon = await Pokemon.findAll({
         include: {
           model: Type,
@@ -148,21 +174,23 @@ const getPokemonById = async (req, res) => {
           },
         },
       });
-      let pokemonIdDb = pokemon.filter((e) => e.id === id);
+      let pokemonIdDb = pokemon.filter((e) => e.id == id);
       res.send(pokemonIdDb);
     }
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({error: error.message})
   }
 };
 
 const createPokemon = async (req, res) => {
   try {
+    
     const { name, hp, attack, defense, speed, height, weight, image, types } =
       req.body;
     const findPokemon = await Pokemon.findOne({
-      where: { name: name.toLowerCase() },//ver esto de lowerCase
-    });//Solo se fija si existe entre los creados
+      
+      where: { name: name.toLowerCase() },
+    });
     if (findPokemon) {
       res.send("Pokemon already exists");
     } else {
@@ -175,34 +203,21 @@ const createPokemon = async (req, res) => {
         speed: speed,
         height: height,
         weight: weight,
+        createInDb: "true"
       });
       let pokemonType = await Type.findAll({
         where: {
           name: types,
         },
-      });
+      }); 
       await newPokemon.addTypes(pokemonType);
       res.status(200)
+      res.send(newPokemon)
     }
   } catch (error) {
-    console.log(error);
+    return res.status(500).json({error: error.message})
   }
 };
-
-
-
-const deletePokemon = async (id)=> {
-try {
-   await Pokemon.destroy({
-    where: {id},
-  });
-
-  return `This Pokemon has been released, Bye Bye!`
-} catch (error) {
-  throw new Error(error.message)
-}
-  
-}
 
 const deletePokemonfromdb = async (req, res)=>{
   const {id} = req.params
@@ -213,7 +228,6 @@ const deletePokemonfromdb = async (req, res)=>{
     return res.status(400).json({error: error.message})
   }
 }
-
 
 
 module.exports = {

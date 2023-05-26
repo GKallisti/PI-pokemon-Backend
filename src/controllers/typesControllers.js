@@ -1,4 +1,4 @@
-const axios = require('axios');  //estas serian como tus dietas 
+const axios = require('axios');  
 const { Type } = require('../db');
 
 const getTypes = async (req, res) => {
@@ -8,13 +8,13 @@ const getTypes = async (req, res) => {
         allTypes.forEach( e => {
             Type.findOrCreate({
                 where: {
-                    name: e.name, //solo tenemos name y id ;)
+                    name: e.name, 
                 },
             });
         });
-        // console.log(allTypes);
-        const dbTypes = await Type.findAll();//esta linea es importante
-        // console.log(dbTypes);
+       
+        const dbTypes = await Type.findAll();
+       
         res.send(dbTypes);
     }catch(error){
         console.log(error);

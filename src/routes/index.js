@@ -4,9 +4,9 @@ const { getPokemons, createPokemon, getPokemonById, deletePokemonfromdb } = requ
 
 const router = Router();
 router.use('/types', getTypes);
-router.get('/pokemons', getPokemons);//query {name} ?name=pikachu
-router.get('/pokemons:id', getPokemonById);//params
-router.post(`/pokemons`, createPokemon);//query {name}
+router.get('/pokemons', getPokemons);
+router.get('/pokemons:id', getPokemonById);
+router.post(`/pokemons`, createPokemon);
 router.delete('/delete/:id', deletePokemonfromdb);
 
 module.exports = router;
